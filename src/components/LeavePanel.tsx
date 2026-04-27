@@ -260,16 +260,16 @@ export const LeavePanel: React.FC<LeavePanelProps> = ({ employees, currentUser, 
   const mainLeaveTypes = [LeaveType.ANNUAL, LeaveType.SICK, LeaveType.PERSONAL];
 
   return (
-    <div className="space-y-10 max-w-7xl mx-auto pb-20">
+    <div className="space-y-8 lg:space-y-10 max-w-7xl mx-auto pb-20">
       {/* Header Area */}
-      <div className="bg-white p-8 lg:p-10 rounded-[2.5rem] border border-slate-200 shadow-sm animate-in slide-in-from-top-4 duration-500 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+      <div className="bg-white p-5 sm:p-6 lg:p-10 rounded-[2rem] lg:rounded-[2.5rem] border border-slate-200 shadow-sm animate-in slide-in-from-top-4 duration-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 lg:gap-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full -mr-32 -mt-32 blur-3xl -z-10"></div>
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl shadow-indigo-100 ring-8 ring-indigo-50 transition-transform hover:rotate-3">
-             <FileCheck size={40} />
+        <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl shadow-indigo-100 ring-8 ring-indigo-50 transition-transform hover:rotate-3">
+             <FileCheck size={32} className="sm:w-10 sm:h-10" />
           </div>
-          <div>
-            <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase leading-none">การลา<br/><span className="text-indigo-600 text-2xl font-bold tracking-normal normal-case">Leave Requests</span></h2>
+          <div className="min-w-0">
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight uppercase leading-none">การลา<br/><span className="text-indigo-600 text-xl sm:text-2xl font-bold tracking-normal normal-case">Leave Requests</span></h2>
             <p className="text-slate-500 font-medium mt-2">ยื่นคำขอลาพักผ่อนและตรวจสอบสถิติวันคงเหลือ</p>
           </div>
         </div>
@@ -337,8 +337,8 @@ export const LeavePanel: React.FC<LeavePanelProps> = ({ employees, currentUser, 
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-        <div className="p-8 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-slate-50/30">
+      <div className="bg-white rounded-[2rem] lg:rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div className="p-5 sm:p-6 lg:p-8 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-slate-50/30">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-white border border-slate-100 rounded-2xl shadow-sm text-indigo-600">
               <ClipboardList size={24} />
@@ -360,7 +360,7 @@ export const LeavePanel: React.FC<LeavePanelProps> = ({ employees, currentUser, 
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="responsive-table custom-scrollbar">
           <table className="w-full text-left">
             <thead className="bg-slate-50/50 border-b border-slate-100">
               <tr>
@@ -501,7 +501,7 @@ export const LeavePanel: React.FC<LeavePanelProps> = ({ employees, currentUser, 
             </div>
 
             <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="responsive-table custom-scrollbar">
                 <table className="w-full text-left">
                   <thead className="bg-slate-50 border-b border-slate-100">
                     <tr>
@@ -550,9 +550,9 @@ export const LeavePanel: React.FC<LeavePanelProps> = ({ employees, currentUser, 
       )}
 
       {isAdding && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-indigo-50/30">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-2 sm:p-4">
+          <div className="responsive-modal bg-white rounded-[2rem] lg:rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
+            <div className="p-5 sm:p-8 border-b border-slate-100 flex justify-between items-center gap-4 bg-indigo-50/30">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200"><Send size={24} /></div>
                 <div>
@@ -563,7 +563,7 @@ export const LeavePanel: React.FC<LeavePanelProps> = ({ employees, currentUser, 
               <button onClick={() => setIsAdding(false)} className="w-10 h-10 flex items-center justify-center bg-white shadow-sm border border-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all active:scale-90">✕</button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleSubmit} className="p-5 sm:p-8 space-y-6 sm:space-y-8 overflow-y-auto custom-scrollbar">
               {isDateAlreadyRequested && (
                 <div className="bg-rose-50 border-2 border-rose-200 p-6 rounded-3xl flex items-start gap-4 animate-in shake duration-500">
                   <div className="p-2 bg-rose-500 text-white rounded-xl shadow-lg shadow-rose-100"><AlertCircle size={24} /></div>
@@ -657,8 +657,8 @@ export const LeavePanel: React.FC<LeavePanelProps> = ({ employees, currentUser, 
       )}
 
       {viewDetail && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-           <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-2 sm:p-4">
+           <div className="responsive-modal bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
              <div className="p-8 border-b border-slate-100 flex justify-between items-center"><h3 className="font-black text-slate-900 text-xl uppercase tracking-tight">Leave Record Details</h3><button onClick={() => setViewDetail(null)} className="p-2 hover:bg-slate-100 rounded-full transition-all">✕</button></div>
              <div className="p-8 space-y-6">
                 <div className="flex items-center justify-between p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100">

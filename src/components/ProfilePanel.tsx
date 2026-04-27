@@ -133,10 +133,10 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ currentUser, onUpdat
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+    <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       {/* Profile Header */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden relative">
-        <div className="px-8 pb-8 pt-8 relative flex flex-col md:flex-row md:items-end gap-6">
+      <div className="bg-white rounded-[2rem] lg:rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden relative">
+        <div className="px-5 sm:px-8 pb-6 sm:pb-8 pt-6 sm:pt-8 relative flex flex-col md:flex-row md:items-end gap-6">
           <div className="relative">
             <div className="w-32 h-32 rounded-[2.5rem] bg-white p-1 shadow-xl overflow-hidden">
               <img src={formData.avatar || currentUser.avatar} className="w-full h-full rounded-[2.25rem] object-cover" alt="" />
@@ -159,7 +159,7 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ currentUser, onUpdat
           </div>
           
           <div className="flex-1 pb-2">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3 leading-tight">
               {currentUser.nameTh || currentUser.name}
               {currentUser.role === 'Admin' && <Shield size={20} className="text-rose-500 fill-rose-500" />}
             </h2>
@@ -179,11 +179,11 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ currentUser, onUpdat
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Profile and Security Column */}
         <div className="lg:col-span-2 space-y-8">
           {/* General Information Form */}
-          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 lg:p-10">
+          <div className="bg-white rounded-[2rem] lg:rounded-[2.5rem] border border-slate-200 shadow-sm p-5 sm:p-8 lg:p-10">
             <div className="flex items-center gap-3 mb-8">
               <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
                 <User size={20} />
@@ -348,7 +348,7 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ currentUser, onUpdat
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
+              <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 {showSuccess && (
                   <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm animate-in fade-in slide-in-from-left-2 transition-all">
                     <CheckCircle2 size={18} />
@@ -359,7 +359,7 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ currentUser, onUpdat
                 <button 
                   type="submit" 
                   disabled={isSaving}
-                  className="px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+                  className="w-full sm:w-auto justify-center px-6 sm:px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
                 >
                   {isSaving ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />}
                   {isSaving ? 'Saving Changes...' : 'Save Profile'}
@@ -369,7 +369,7 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ currentUser, onUpdat
           </div>
 
           {/* Password and Security Form */}
-          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 lg:p-10">
+          <div className="bg-white rounded-[2rem] lg:rounded-[2.5rem] border border-slate-200 shadow-sm p-5 sm:p-8 lg:p-10">
             <div className="flex items-center gap-3 mb-8">
               <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
                 <Lock size={20} />
@@ -454,7 +454,7 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ currentUser, onUpdat
                 <button 
                   type="submit" 
                   disabled={isUpdatingPass || !passData.current || !passData.new || !passData.confirm}
-                  className="px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+                  className="w-full sm:w-auto justify-center px-6 sm:px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
                 >
                   {isUpdatingPass ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />}
                   {isUpdatingPass ? 'Updating...' : 'Update Password'}
@@ -466,7 +466,7 @@ export const ProfilePanel: React.FC<ProfilePanelProps> = ({ currentUser, onUpdat
 
         {/* Info Sidebar */}
         <div className="space-y-8">
-          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
+          <div className="bg-white rounded-[2rem] lg:rounded-[2.5rem] border border-slate-200 shadow-sm p-5 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 bg-slate-50 text-slate-500 rounded-xl">
                 <Building2 size={20} />

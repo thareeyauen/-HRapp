@@ -572,7 +572,7 @@ export const WorkCalendar: React.FC<WorkCalendarProps> = ({
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm overflow-x-auto scrollbar-hide">
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm responsive-table custom-scrollbar">
         <div className="min-w-[700px] lg:min-w-full">
           <div className="calendar-grid bg-slate-50 border-b border-slate-200">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
@@ -646,8 +646,8 @@ export const WorkCalendar: React.FC<WorkCalendarProps> = ({
 
       {/* Modal Section */}
       {selectedDayInfo && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-2 sm:p-4">
+          <div className="responsive-modal bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
             <div className={`p-6 lg:p-8 border-b border-slate-100 flex justify-between items-start flex-shrink-0 ${isTodaySelected ? 'bg-emerald-50/30' : isFutureDate ? 'bg-indigo-50/30' : 'bg-white'}`}>
               <div className="min-w-0">
                 <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{format(selectedDayInfo.date, 'EEEE')}</span>

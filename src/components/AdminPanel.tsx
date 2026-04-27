@@ -8,7 +8,6 @@ import {
   Building2, PlusCircle, Settings2, BriefcaseIcon, Save, Ban, Phone, Mail, MapPin, Contact, ScrollText, Info, CalendarDays, Plus, Sparkles, RefreshCw, Link as LinkIcon, Globe, AlertTriangle, Camera
 } from 'lucide-react';
 import { DEFAULT_BALANCES } from '../constants';
-import { GoogleGenAI, Type } from "@google/genai";
 
 interface AdminPanelProps {
   employees: Employee[];
@@ -133,6 +132,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const fetchThaiHolidaysAI = async () => {
     setIsFetchingHolidays(true);
     try {
+      const { GoogleGenAI, Type } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const currentYear = new Date().getFullYear();
       const yearsToFetch = [currentYear - 1, currentYear, currentYear + 1];
@@ -395,23 +395,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm relative overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-5 sm:p-6 lg:p-10 rounded-[2rem] lg:rounded-[3rem] border border-slate-200 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full -mr-32 -mt-32 blur-3xl"></div>
         <div className="relative z-10">
-          <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase">User Management</h2>
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight uppercase leading-tight">User Management</h2>
           <p className="text-slate-500 font-medium mt-2">จัดการสิทธิ์พนักงาน, ข้อมูลโปรไฟล์ และแผนกทั้งหมดในระบบ</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           <button 
             onClick={handleOpenSettings}
-            className="relative z-10 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-black px-6 py-5 rounded-2xl flex items-center gap-3 transition-all active:scale-95 text-sm uppercase tracking-widest"
+            className="relative z-10 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-black px-5 sm:px-6 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 text-xs sm:text-sm uppercase tracking-widest"
           >
             <Settings2 size={22} />
             System Settings
           </button>
           <button 
             onClick={() => setIsAdding(true)}
-            className="relative z-10 bg-slate-900 hover:bg-indigo-600 text-white font-black px-10 py-5 rounded-2xl flex items-center gap-3 transition-all shadow-2xl shadow-slate-200 active:scale-95 text-sm uppercase tracking-widest"
+            className="relative z-10 bg-slate-900 hover:bg-indigo-600 text-white font-black px-5 sm:px-10 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-2xl shadow-slate-200 active:scale-95 text-xs sm:text-sm uppercase tracking-widest"
           >
             <UserPlus size={22} />
             Add Employee
@@ -420,8 +420,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-        <div className="p-6 bg-slate-50/50 border-b border-slate-100 flex items-center gap-4">
+      <div className="bg-white rounded-[2rem] lg:rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div className="p-4 sm:p-6 bg-slate-50/50 border-b border-slate-100 flex items-center gap-4">
           <div className="flex-1 relative group">
             <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
             <input 
@@ -434,7 +434,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
         
-        <div className="overflow-x-auto">
+        <div className="responsive-table custom-scrollbar">
           <table className="w-full text-left">
             <thead className="bg-slate-50/50 border-b border-slate-100">
               <tr>
@@ -528,8 +528,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* MODAL: DELETE CONFIRMATION */}
       {deletingEmp && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[130] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-sm overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[130] flex items-center justify-center p-2 sm:p-4">
+          <div className="responsive-modal bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-8 text-center space-y-6">
               <div className="w-20 h-20 bg-rose-50 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto shadow-inner ring-8 ring-rose-50/50">
                 <AlertTriangle size={40} className="animate-pulse" />
@@ -564,8 +564,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* MODAL: SYSTEM SETTINGS */}
       {showSettings && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[120] flex items-center justify-center p-2 sm:p-4">
+          <div className="responsive-modal bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div className="flex items-center gap-3">
                 <Settings2 className="text-indigo-600" size={24} />
@@ -719,8 +719,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* MODAL: RESET PASSWORD */}
       {resettingUser && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300 relative">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[120] flex items-center justify-center p-2 sm:p-4">
+          <div className="responsive-modal bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300 relative">
             <button 
               onClick={() => setResettingUser(null)}
               className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
@@ -785,9 +785,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* MODAL: ADD / EDIT EMPLOYEE */}
       {isAdding && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-3xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-indigo-50/30">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[100] flex items-center justify-center p-2 sm:p-4">
+          <div className="responsive-modal bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full max-w-3xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
+            <div className="p-5 sm:p-8 border-b border-slate-100 flex justify-between items-center gap-4 bg-indigo-50/30">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100">
                    <UserPlus size={24} />
@@ -806,7 +806,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleSubmit} className="p-5 sm:p-8 lg:p-10 space-y-6 sm:space-y-8 overflow-y-auto custom-scrollbar">
               {/* Identity Section */}
               <div className="space-y-6">
                 <div className="flex items-center gap-2 px-1 text-slate-800">

@@ -31,19 +31,19 @@ export const ReportExport: React.FC<ReportExportProps> = ({ logs, employees }) =
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-2xl mx-auto">
-      <div className="flex items-center gap-4 mb-8">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-8 max-w-2xl mx-auto">
+      <div className="flex items-center gap-4 mb-6 sm:mb-8">
         <div className="bg-emerald-100 text-emerald-600 p-3 rounded-xl">
           <FileSpreadsheet size={32} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Export Report</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Export Report</h2>
           <p className="text-slate-500">Generate detailed attendance reports in Excel format.</p>
         </div>
       </div>
 
       <div className="space-y-6">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
               <CalendarIcon size={14} /> Start Date
@@ -68,7 +68,7 @@ export const ReportExport: React.FC<ReportExportProps> = ({ logs, employees }) =
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {presetRanges.map(range => (
             <button
               key={range.label}

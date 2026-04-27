@@ -75,21 +75,21 @@ export const Login: React.FC<LoginProps> = ({ employees, departments, positions,
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 selection:bg-indigo-100 selection:text-indigo-900 overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-6 sm:p-6 selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden overflow-y-auto">
       <div className="w-full max-w-lg animate-in fade-in zoom-in-95 duration-500">
-        <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden relative">
+        <div className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden relative">
           
-          <div className="p-8 pb-4 text-center space-y-4">
-            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-indigo-100 ring-8 ring-indigo-50 transform hover:rotate-6 transition-transform">
-              <span className="text-white font-black text-3xl">H</span>
+          <div className="p-6 sm:p-8 pb-4 text-center space-y-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-indigo-100 ring-8 ring-indigo-50 transform hover:rotate-6 transition-transform">
+              <span className="text-white font-black text-2xl sm:text-3xl">H</span>
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">HAND Social Enterprise</h1>
-              <p className="text-slate-400 font-bold text-[9px] uppercase tracking-[0.2em] mt-1">Enterprise Workforce Management</p>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight uppercase leading-tight">HAND Social Enterprise</h1>
+              <p className="text-slate-400 font-bold text-[8px] sm:text-[9px] uppercase tracking-[0.16em] sm:tracking-[0.2em] mt-1">Enterprise Workforce Management</p>
             </div>
           </div>
 
-          <div className="px-8 pb-10 space-y-6">
+          <div className="px-5 sm:px-8 pb-8 sm:pb-10 space-y-5 sm:space-y-6">
             <div className="p-1 bg-slate-100 rounded-2xl flex">
               <button 
                 onClick={() => setMode('login')}
@@ -130,7 +130,7 @@ export const Login: React.FC<LoginProps> = ({ employees, departments, positions,
                       className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:outline-none font-bold text-sm transition-all"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                         <Building2 size={12} /> Department

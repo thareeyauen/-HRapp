@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import { WorkLog, Employee, LocationType, LeaveRequest, LeaveStatus, LeaveType, LeaveDuration } from './types';
 import { isWorkingDay } from './constants';
 import { eachDayOfInterval, isWithinInterval } from 'date-fns';
@@ -40,7 +39,8 @@ const calculateLeaveDaysInPeriod = (req: LeaveRequest, reportStart: string, repo
   return days.length;
 };
 
-export const exportToExcel = (logs: WorkLog[], employees: Employee[], startDate: string, endDate: string, leaveRequests: LeaveRequest[] = [], departments: string[] = []) => {
+export const exportToExcel = async (logs: WorkLog[], employees: Employee[], startDate: string, endDate: string, leaveRequests: LeaveRequest[] = [], departments: string[] = []) => {
+  const XLSX = await import('xlsx');
   const filteredLogs = logs.filter(l => l.date >= startDate && l.date <= endDate);
   
   const individualData = employees.map(emp => {

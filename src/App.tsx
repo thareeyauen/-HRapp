@@ -1,16 +1,16 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { WorkCalendar } from './components/WorkCalendar';
-import { ManagerDashboard } from './components/ManagerDashboard';
-import { AdminPanel } from './components/AdminPanel';
-import { LeavePanel } from './components/LeavePanel';
-import { ProfilePanel } from './components/ProfilePanel';
 import { UserProfileModal } from './components/UserProfileModal';
 import { Login } from './components/Login';
 import { MOCK_EMPLOYEES, generateInitialLogs, DEPARTMENTS, POSITIONS, INITIAL_HOLIDAYS, isWorkingDay } from './constants';
 import { LocationType, WorkLog, Employee, UserRole, LeaveRequest, LeaveStatus, LeaveType, CompanyHoliday, Notification } from './types';
 import { LayoutDashboard, Calendar, Bell, Menu, X, Clock, UserCog, LogOut, Building2, MapPin, Home, UserCheck, ClipboardList, ChevronDown, RefreshCw, Shield, Sparkles, User, Plane, Check, Info, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { format, isWithinInterval, isBefore, isAfter, isSameDay } from 'date-fns';
-import { GoogleGenAI, Type } from "@google/genai";
+
+const ManagerDashboard = lazy(() => import('./components/ManagerDashboard').then(module => ({ default: module.ManagerDashboard })));
+const AdminPanel = lazy(() => import('./components/AdminPanel').then(module => ({ default: module.AdminPanel })));
+const LeavePanel = lazy(() => import('./components/LeavePanel').then(module => ({ default: module.LeavePanel })));
+const ProfilePanel = lazy(() => import('./components/ProfilePanel').then(module => ({ default: module.ProfilePanel })));
 
 const startOfDay = (date: Date): Date => {
   const d = new Date(date);
@@ -30,15 +30,59 @@ const subDays = (date: Date, amount: number): Date => {
 
 type Tab = 'home' | 'dashboard' | 'leave' | 'admin' | 'profile';
 
+const STORAGE_KEYS = {
+  currentUserId: 'hrapp.currentUserId',
+  employees: 'hrapp.employees',
+};
+
+const TAB_TO_PATH: Record<Tab, string> = {
+  home: '/',
+  dashboard: '/dashboard',
+  leave: '/leave',
+  admin: '/admin',
+  profile: '/profile',
+};
+
+const PATH_TO_TAB: Record<string, Tab> = {
+  '/': 'home',
+  '/dashboard': 'dashboard',
+  '/leave': 'leave',
+  '/admin': 'admin',
+  '/profile': 'profile',
+};
+
+const getTabFromPath = (pathname: string = window.location.pathname): Tab => {
+  const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+  return PATH_TO_TAB[normalizedPath] || 'home';
+};
+
+const loadStoredEmployees = (): Employee[] => {
+  try {
+    const storedEmployees = window.localStorage.getItem(STORAGE_KEYS.employees);
+    if (!storedEmployees) return MOCK_EMPLOYEES;
+
+    const parsed = JSON.parse(storedEmployees);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : MOCK_EMPLOYEES;
+  } catch {
+    return MOCK_EMPLOYEES;
+  }
+};
+
 const App: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>(MOCK_EMPLOYEES);
+  const [employees, setEmployees] = useState<Employee[]>(() => loadStoredEmployees());
   const [departments, setDepartments] = useState<string[]>(DEPARTMENTS);
   const [positions, setPositions] = useState<string[]>(POSITIONS);
   const [holidays, setHolidays] = useState<CompanyHoliday[]>(INITIAL_HOLIDAYS);
   const [isUpdatingHolidays, setIsUpdatingHolidays] = useState(false);
   
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState<Employee>(employees[0]); 
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const storedUserId = window.localStorage.getItem(STORAGE_KEYS.currentUserId);
+    return Boolean(storedUserId && employees.some(employee => employee.id === storedUserId));
+  });
+  const [currentUser, setCurrentUser] = useState<Employee>(() => {
+    const storedUserId = window.localStorage.getItem(STORAGE_KEYS.currentUserId);
+    return employees.find(employee => employee.id === storedUserId) || employees[0];
+  }); 
   const [selectedProfileUser, setSelectedProfileUser] = useState<Employee | null>(null);
 
   const [logs, setLogs] = useState<WorkLog[]>([]);
@@ -56,7 +100,7 @@ const App: React.FC = () => {
       timestamp: new Date().toISOString()
     }
   ]);
-  const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [activeTab, setActiveTab] = useState<Tab>(() => getTabFromPath());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -67,14 +111,53 @@ const App: React.FC = () => {
   
   const notificationsRef = useRef<HTMLDivElement>(null);
 
+  const navigateToTab = useCallback((tab: Tab, replace = false) => {
+    const nextPath = TAB_TO_PATH[tab];
+    setActiveTab(tab);
+
+    if (window.location.pathname !== nextPath) {
+      const historyMethod = replace ? window.history.replaceState : window.history.pushState;
+      historyMethod.call(window.history, null, '', nextPath);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setActiveTab(getTabFromPath());
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   useEffect(() => {
     setLogs(generateInitialLogs(employees));
   }, []);
 
   useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.employees, JSON.stringify(employees));
+  }, [employees]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const refreshedCurrentUser = employees.find(employee => employee.id === currentUser.id);
+    if (refreshedCurrentUser) {
+      setCurrentUser(refreshedCurrentUser);
+      return;
+    }
+
+    window.localStorage.removeItem(STORAGE_KEYS.currentUserId);
+    setIsLoggedIn(false);
+    setCurrentUser(employees[0]);
+    navigateToTab('home', true);
+  }, [currentUser.id, employees, isLoggedIn, navigateToTab]);
+
+  useEffect(() => {
     const fetchThaiHolidays = async () => {
       setIsUpdatingHolidays(true);
       try {
+        const { GoogleGenAI, Type } = await import('@google/genai');
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const currentYear = new Date().getFullYear();
         const yearsToFetch = [currentYear - 1, currentYear, currentYear + 1];
@@ -197,6 +280,12 @@ const App: React.FC = () => {
 
   const unreadCount = allNotifications.filter(n => !n.isRead).length;
 
+  const lazyPageFallback = (
+    <div className="flex min-h-[360px] items-center justify-center rounded-[2rem] border border-slate-200 bg-white text-slate-400">
+      <RefreshCw size={22} className="animate-spin" />
+    </div>
+  );
+
   const handleMarkAllAsRead = () => {
     const newReadIds = new Set(readNotificationIds);
     allNotifications.forEach(n => newReadIds.add(n.id));
@@ -208,7 +297,7 @@ const App: React.FC = () => {
     newReadIds.add(n.id);
     setReadNotificationIds(newReadIds);
     
-    if (n.tabLink) setActiveTab(n.tabLink);
+    if (n.tabLink) navigateToTab(n.tabLink);
     setIsNotificationsOpen(false);
   };
 
@@ -229,6 +318,7 @@ const App: React.FC = () => {
   const handleLogin = (user: Employee) => {
     setCurrentUser(user);
     setIsLoggedIn(true);
+    window.localStorage.setItem(STORAGE_KEYS.currentUserId, user.id);
     setReadNotificationIds(new Set()); 
   };
 
@@ -236,18 +326,20 @@ const App: React.FC = () => {
     setEmployees(prev => [...prev, newUser]);
     setCurrentUser(newUser);
     setIsLoggedIn(true);
+    window.localStorage.setItem(STORAGE_KEYS.currentUserId, newUser.id);
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setIsProfileOpen(false);
     setIsNotificationsOpen(false);
-    setActiveTab('home');
+    window.localStorage.removeItem(STORAGE_KEYS.currentUserId);
+    navigateToTab('home', true);
   };
 
   const handleShowProfile = (user: Employee) => {
     if (user.id === currentUser.id) {
-      setActiveTab('profile');
+      navigateToTab('profile');
     } else {
       setSelectedProfileUser(user);
     }
@@ -332,6 +424,17 @@ const App: React.FC = () => {
   );
 
   useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const activeMenuItem = menuItems.find(item => item.id === activeTab);
+    const canAccessActiveTab = !activeMenuItem?.requiresRole || (activeMenuItem.requiresRole as UserRole[]).includes(currentUser.role);
+
+    if (!canAccessActiveTab) {
+      navigateToTab('home', true);
+    }
+  }, [activeTab, currentUser.role, isLoggedIn, navigateToTab]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setIsNotificationsOpen(false);
@@ -350,14 +453,14 @@ const App: React.FC = () => {
       case 'home': 
         return (
           <div className="space-y-6 max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm mb-8 animate-in slide-in-from-top-4 duration-500 relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-6 bg-white p-5 sm:p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] border border-slate-200 shadow-sm mb-6 lg:mb-8 animate-in slide-in-from-top-4 duration-500 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
               <div className="flex flex-col relative z-10">
                 <span className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                   {format(new Date(), 'EEEE')}
                   {isUpdatingHolidays && <span className="flex items-center gap-1 text-[10px] text-indigo-400 normal-case animate-pulse"><Sparkles size={10} /> Auto-updating holidays...</span>}
                 </span>
-                <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">{format(new Date(), 'MMMM d, yyyy')}</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{format(new Date(), 'MMMM d, yyyy')}</h2>
               </div>
               <div className="flex flex-col items-start md:items-end gap-4 relative z-10">
                 <div className="flex flex-col items-start md:items-end w-full sm:w-auto">
@@ -365,7 +468,7 @@ const App: React.FC = () => {
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <button 
                       onClick={() => setSelectedDateForModal(new Date())}
-                      className={`flex items-center gap-4 px-6 py-3.5 rounded-3xl border shadow-sm transition-all hover:scale-[1.02] active:scale-95 text-left
+                      className={`w-full sm:w-auto flex items-center justify-between sm:justify-start gap-4 px-5 sm:px-6 py-3.5 rounded-3xl border shadow-sm transition-all hover:scale-[1.02] active:scale-95 text-left
                         ${todayLog ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : todayLeave ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-rose-50 text-rose-600 border-rose-100 animate-pulse'}
                       `}
                     >
@@ -384,16 +487,17 @@ const App: React.FC = () => {
             <WorkCalendar logs={logs} employees={employees} departments={departments} holidays={holidays} currentUser={currentUser} leaveRequests={leaveRequests} onCheckIn={handleCheckIn} onRemoveCheckIn={handleRemoveCheckIn} externalSelectedDate={selectedDateForModal} onExternalDateChange={setSelectedDateForModal} onViewProfile={handleShowProfile} />
           </div>
         );
-      case 'dashboard': return <ManagerDashboard logs={logs} employees={employees} departments={departments} leaveRequests={leaveRequests} holidays={holidays} onViewProfile={handleShowProfile} />;
-      case 'leave': return <LeavePanel employees={employees} currentUser={currentUser} requests={leaveRequests} onAction={handleLeaveAction} onAddLeave={handleAddLeave} onViewProfile={handleShowProfile} />;
-      case 'admin': return <AdminPanel employees={employees} departments={departments} positions={positions} holidays={holidays} onAddEmployee={handleAddEmployee} onRemoveEmployee={handleRemoveEmployee} onUpdateEmployee={handleUpdateEmployee} onSaveSettings={handleSaveSettings} onViewProfile={handleShowProfile} />;
-      case 'profile': return <ProfilePanel currentUser={currentUser} onUpdateProfile={handleUpdateEmployee} />;
+      case 'dashboard': return <Suspense fallback={lazyPageFallback}><ManagerDashboard logs={logs} employees={employees} departments={departments} leaveRequests={leaveRequests} holidays={holidays} onViewProfile={handleShowProfile} /></Suspense>;
+      case 'leave': return <Suspense fallback={lazyPageFallback}><LeavePanel employees={employees} currentUser={currentUser} requests={leaveRequests} onAction={handleLeaveAction} onAddLeave={handleAddLeave} onViewProfile={handleShowProfile} /></Suspense>;
+      case 'admin': return <Suspense fallback={lazyPageFallback}><AdminPanel employees={employees} departments={departments} positions={positions} holidays={holidays} onAddEmployee={handleAddEmployee} onRemoveEmployee={handleRemoveEmployee} onUpdateEmployee={handleUpdateEmployee} onSaveSettings={handleSaveSettings} onViewProfile={handleShowProfile} /></Suspense>;
+      case 'profile': return <Suspense fallback={lazyPageFallback}><ProfilePanel currentUser={currentUser} onUpdateProfile={handleUpdateEmployee} /></Suspense>;
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row selection:bg-indigo-100 selection:text-indigo-900">
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      {isMobileMenuOpen && <div className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden" onClick={() => setIsMobileMenuOpen(false)} />}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,85vw)] md:w-64 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="h-full flex flex-col p-6">
           <div className="flex items-center gap-3 mb-10 px-2">
             <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/30">H</div>
@@ -401,13 +505,13 @@ const App: React.FC = () => {
           </div>
           <nav className="flex-1 space-y-1">
             {visibleMenuItems.map(item => (
-              <button key={item.id} onClick={() => { setActiveTab(item.id as Tab); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeTab === item.id ? 'bg-slate-800 text-white shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+              <button key={item.id} onClick={() => { navigateToTab(item.id as Tab); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeTab === item.id ? 'bg-slate-800 text-white shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
                 <item.icon size={20} />{item.label}
               </button>
             ))}
           </nav>
           <div className="mt-auto pt-6 border-t border-slate-800">
-            <button onClick={() => { setActiveTab('profile'); setIsProfileOpen(false); }} className={`w-full flex items-center gap-3 px-2 py-3 rounded-xl transition-all hover:bg-slate-800/50 text-left ${activeTab === 'profile' ? 'bg-slate-800 text-white' : ''}`}>
+            <button onClick={() => { navigateToTab('profile'); setIsProfileOpen(false); }} className={`w-full flex items-center gap-3 px-2 py-3 rounded-xl transition-all hover:bg-slate-800/50 text-left ${activeTab === 'profile' ? 'bg-slate-800 text-white' : ''}`}>
               <img src={currentUser.avatar} className="w-10 h-10 rounded-full border border-slate-700" alt="" />
               <div className="overflow-hidden flex-1">
                 <div className="text-sm font-bold truncate flex items-center gap-1.5">{currentUser.nicknameTh || currentUser.nickname || currentUser.name} {currentUser.role === 'Admin' && <Shield size={10} className="text-rose-500 fill-rose-500" />}</div>
@@ -419,13 +523,13 @@ const App: React.FC = () => {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 md:ml-64">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-40">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between gap-3 px-3 sm:px-6 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">{isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}</button>
             <h1 className="text-lg font-bold text-slate-800 hidden sm:block">{menuItems.find(m => m.id === activeTab)?.label || 'Page'}</h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="relative" ref={notificationsRef}>
               <button 
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
@@ -440,12 +544,12 @@ const App: React.FC = () => {
               </button>
 
               {isNotificationsOpen && (
-                <div className="absolute right-0 mt-2 w-[340px] bg-white rounded-3xl shadow-2xl border border-slate-100 py-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[100] overflow-hidden">
+                <div className="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-[340px] bg-white rounded-3xl shadow-2xl border border-slate-100 py-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[100] overflow-hidden">
                   <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
                     <h3 className="font-black text-slate-800 text-sm uppercase tracking-tight">Alerts & Notifications</h3>
                     <span className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black text-indigo-500 uppercase">{unreadCount} New</span>
                   </div>
-                  <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                  <div className="max-h-[min(400px,calc(100dvh-12rem))] overflow-y-auto custom-scrollbar">
                     {allNotifications.length === 0 ? (
                       <div className="p-10 text-center flex flex-col items-center">
                         <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-3"><Check size={24} /></div>
@@ -504,14 +608,14 @@ const App: React.FC = () => {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active User</p>
                     <p className="text-xs font-black text-slate-800 truncate">{currentUser.nicknameTh || currentUser.nickname || currentUser.name}</p>
                   </div>
-                  <button onClick={() => { setActiveTab('profile'); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors px-4"><User size={14} /> My Profile Settings</button>
+                  <button onClick={() => { navigateToTab('profile'); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors px-4"><User size={14} /> My Profile Settings</button>
                   <div className="mt-2 pt-2 border-t border-slate-50"><button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors"><LogOut size={14} /> Sign Out</button></div>
                 </div>
               )}
             </div>
           </div>
         </header>
-        <div className="p-4 md:p-8 animate-in fade-in duration-500">{renderContent()}</div>
+        <div className="p-4 sm:p-6 xl:p-8 animate-in fade-in duration-500">{renderContent()}</div>
       </main>
       {selectedProfileUser && <UserProfileModal user={selectedProfileUser} onClose={() => setSelectedProfileUser(null)} />}
     </div>

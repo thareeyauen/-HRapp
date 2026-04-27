@@ -381,7 +381,7 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ logs, employ
         </div>
 
         {/* Export Report Section */}
-        <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+        <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-8">
           <div className="flex items-center gap-4 mb-8">
             <div className="bg-emerald-100 text-emerald-600 p-3 rounded-2xl">
               <FileSpreadsheet size={32} />
